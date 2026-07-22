@@ -15,6 +15,22 @@ gesturing, and there is **no cloud** — all recognition is on-device.
 
 ---
 
+## Download
+
+**[⬇︎ Download the latest build](https://github.com/brycelewiswork/gesture-based-hci/releases/latest)** — Apple Silicon (M-series) only.
+
+1. Unzip and move **Gesture HCI.app** to `/Applications`.
+2. It's **self-signed, not notarized**, so Gatekeeper will block it on first launch. Clear the quarantine flag once:
+   ```bash
+   xattr -dr com.apple.quarantine "/Applications/Gesture HCI.app"
+   ```
+   then open it normally.
+3. Grant **Accessibility** when prompted (needed to move windows).
+
+The app runs in the **menu bar (✋)**, not the Dock — open the Gesture Studio from there. Intel Macs and anyone who'd rather not bypass Gatekeeper can [build from source](#install--run) instead.
+
+---
+
 ## Requirements
 
 - **macOS** (Apple Silicon or Intel)
