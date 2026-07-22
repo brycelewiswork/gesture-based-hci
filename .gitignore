@@ -1,0 +1,9 @@
+node_modules/
+dist/
+release/
+native/bin/
+.DS_Store
+*.log
+
+# Local Claude Code config
+.claude/

@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Gesture Studio</title>
+    <style>
+      :root {
+        --bg: #0b0e14;
+        --panel: #131823;
+        --panel2: #1b2230;
+        --line: #263042;
+        --text: #cbd5e1;
+        --muted: #8595ab;
+        --accent: #5ac8ff;
+        --accent-dim: #2b6b8c;
+        --good: #56d68a;
+        --warn: #e6b43c;
+        --danger: #e0603c;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 13px/1.45 -apple-system, system-ui, sans-serif;
+      }
+      .app { display: grid; grid-template-columns: 440px 1fr; min-height: 100vh; }
+      .preview {
+        padding: 18px;
+        border-right: 1px solid var(--line);
+        position: sticky;
+        top: 0;
+        align-self: start;
+        height: 100vh;
+        overflow: auto;
+      }
+      h1 { font-size: 16px; margin: 0 0 12px; letter-spacing: 0.2px; }
+      h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin: 0 0 12px; }
+      canvas#cam { width: 400px; height: 300px; border-radius: 10px; background: #000; display: block; }
+      .matchline { margin: 12px 0 4px; font-size: 20px; font-weight: 600; min-height: 26px; }
+      .matchline .raw { font-size: 12px; color: var(--muted); font-weight: 400; margin-left: 8px; }
+      .fingers { display: flex; gap: 10px; margin: 14px 0; }
+      .finger { flex: 1; text-align: center; }
+      .finger .track { height: 90px; background: var(--panel2); border-radius: 6px; position: relative; overflow: hidden; }
+      .finger .fill { position: absolute; left: 0; right: 0; bottom: 0; background: var(--accent-dim); transition: height 60ms linear; }
+      .finger .mid { position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dashed #3a4763; }
+      .finger .lbl { margin-top: 6px; font-size: 11px; color: var(--muted); }
+      .finger .val { font-size: 10px; color: var(--text); font-variant-numeric: tabular-nums; }
+      .finger .raw { font-size: 9px; color: #5c6a80; font-variant-numeric: tabular-nums; }
+      .readypill {
+        display: inline-block; margin: 10px 0 2px; padding: 4px 12px; border-radius: 999px;
+        font-size: 12px; font-weight: 700; letter-spacing: 0.6px;
+        background: var(--panel2); border: 1px solid var(--line); color: var(--muted);
+      }
+      .readypill.ready { background: var(--good); color: #06240f; border-color: var(--good); }
+      .readypill.busy { background: var(--warn); color: #2b1d00; border-color: var(--warn); }
+      .spreadline { margin: 10px 0 2px; font-size: 12px; color: var(--muted); }
+      .spreadline span { color: var(--text); font-variant-numeric: tabular-nums; }
+      .calgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+      .reprow { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+      .reprow input { flex: 1; }
+      .reprow button.on { background: var(--danger); border-color: var(--danger); color: #fff; }
+      .path { font-family: ui-monospace, Menlo, monospace; font-size: 10px; color: var(--good); word-break: break-all; }
+      .reprow input[type="number"] { width: 64px; flex: 0 0 auto; }
+      .cue {
+        text-align: center; font-size: 26px; font-weight: 700; letter-spacing: 1px;
+        padding: 18px; margin: 8px 0; border-radius: 10px;
+        background: var(--panel2); border: 1px solid var(--line); color: var(--muted);
+      }
+      .cue.go { background: var(--good); color: #06240f; border-color: var(--good); }
+      .cue.ready { color: var(--warn); }
+      .calgrid button.captured { border-color: var(--good); color: var(--good); }
+      .preview-actions { margin-top: 8px; }
+      .status { margin-top: 10px; font-size: 12px; color: var(--muted); min-height: 18px; }
+      .status.err { color: var(--danger); }
+
+      .panels { padding: 18px; display: flex; flex-direction: column; gap: 16px; max-width: 760px; }
+      .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+
+      .row { display: grid; grid-template-columns: 150px 1fr 64px; align-items: center; gap: 12px; margin-bottom: 10px; }
+      .row label { color: var(--muted); }
+      input[type="range"] { width: 100%; accent-color: var(--accent); }
+      input[type="number"], input[type="text"], input[type="password"], select, textarea {
+        background: var(--panel2); border: 1px solid var(--line); color: var(--text);
+        border-radius: 7px; padding: 6px 8px; font: inherit; width: 100%;
+      }
+      input[type="number"] { text-align: right; }
+      textarea { min-height: 70px; resize: vertical; }
+
+      button {
+        background: var(--panel2); border: 1px solid var(--line); color: var(--text);
+        border-radius: 8px; padding: 7px 12px; font: inherit; cursor: pointer;
+      }
+      button:hover { border-color: var(--accent-dim); }
+      button.primary { background: var(--accent-dim); border-color: var(--accent); color: #eaf6ff; }
+      button.add { margin-top: 4px; }
+      button.danger { color: var(--danger); }
+
+      .gesture {
+        border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin-bottom: 12px; background: var(--panel2);
+      }
+      .gesture.disabled { opacity: 0.55; }
+      .gesture .ghead { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+      .gesture .ghead input[type="text"] { flex: 1; font-weight: 600; }
+      .gesture .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+      .field { display: flex; flex-direction: column; gap: 4px; }
+      .field span { font-size: 11px; color: var(--muted); }
+
+      .fingerset { display: flex; gap: 8px; margin: 8px 0; }
+      .fcol { flex: 1; text-align: center; }
+      .fcol .fname { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+      .seg { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+      .seg button { border: 0; border-radius: 0; padding: 4px; font-size: 12px; background: transparent; }
+      .seg button.on { background: var(--accent-dim); color: #eaf6ff; }
+      .gactions { display: flex; gap: 8px; margin-top: 4px; }
+
+      .assist-result { margin-top: 12px; border: 1px solid var(--line); border-radius: 10px; padding: 12px; background: var(--panel2); }
+      .assist-result .expl { color: var(--muted); margin-bottom: 8px; }
+      .note { color: var(--muted); font-size: 11px; margin: 8px 0 0; }
+      .spin { color: var(--accent); }
+      label.stack { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+      label.stack > span { color: var(--muted); font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="preview">
+        <h1>✋ Gesture Studio</h1>
+        <canvas id="cam" width="400" height="300"></canvas>
+        <div class="matchline"><span id="matchName">—</span><span class="raw" id="matchRaw"></span></div>
+        <div class="fingers" id="fingerBars"></div>
+        <div class="readypill" id="readyPill">no hand</div>
+        <div class="spreadline">Finger spread: <span id="spreadVal">—</span></div>
+        <div class="status" id="status">Starting camera…</div>
+      </aside>
+
+      <main class="panels">
+        <section class="panel">
+          <h2>Calibration</h2>
+          <p class="note" id="calStatus">Not calibrated — using defaults.</p>
+          <div class="calgrid">
+            <button data-cal="open">1 · Capture open hand</button>
+            <button data-cal="fist">2 · Capture fist</button>
+            <button data-cal="spread">3 · Capture spread</button>
+            <button data-cal="together">4 · Capture together</button>
+          </div>
+          <p class="note">Hold each pose steady, then click. <b>Open</b> + <b>fist</b> set your finger range (0 = fist, 1 = open); <b>spread</b> + <b>together</b> set your splay range. This makes the finger bars read *your* hand instead of hard-coded guesses.</p>
+        </section>
+
+        <section class="panel">
+          <h2>Data capture</h2>
+          <div class="reprow">
+            <input type="text" id="recLabel" placeholder="label — e.g. fist" />
+            <button id="recBtn">● Record</button>
+          </div>
+          <p class="note" id="recStatus">Idle.</p>
+          <p class="note">Logs the raw 21-point hand <b>plus</b> every derived feature, each frame. Hold one pose and move your hand through as much of the space as you can — roll, pitch, yaw, near, far, high, low. Stop, and the file path appears.</p>
+        </section>
+
+        <section class="panel">
+          <h2>Tuning</h2>
+          <div id="tuning"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Gestures</h2>
+          <div id="gestures"></div>
+          <div class="reprow" style="margin-top:14px">
+            <input type="text" id="enrollName" placeholder="motion name — e.g. flick left" />
+            <button id="enrollBtn">● Enroll motion</button>
+          </div>
+          <div class="cue" id="enrollCue" style="display:none">—</div>
+          <p class="note"><b>A motion you perform</b> — a flick, a spread, a wrist rotation, a push toward the camera. Just repeat it at your own pace; it keeps going until the signal is <b>strong</b>, then stops itself (or hit Done). Reps that look like each other are kept; your <b>return-to-start and stray moves are dropped automatically</b> by similarity, so you don't have to control your timing. It learns the whole hand over time — pose, rotation, position, and depth.</p>
+
+          <div class="reprow" style="margin-top:14px">
+            <input type="text" id="gRecName" placeholder="pose name — e.g. open palm" />
+            <button id="gRecBtn">● Record pose</button>
+          </div>
+          <p class="note"><b>A shape you hold</b>, still — for gestures that aren't a movement at all. Hold it and it captures the whole hand, exactly as you make it. Only needed if you want a hold-to-fire gesture.</p>
+        </section>
+
+        <section class="panel">
+          <h2>Recognition test</h2>
+          <div class="reprow">
+            <select id="testGesture"></select>
+            <input type="number" id="testReps" value="10" min="1" max="60" title="times you'll perform it" />
+            <button id="testBtn">▶ Detection run</button>
+            <button id="testQuietBtn">Quiet check</button>
+          </div>
+          <div class="cue" id="testCue">—</div>
+          <p class="note"><b>Detection run:</b> say how many times you'll do it, hit Start, perform it that many times <b>at your own pace</b>, then Stop. It counts what <b>fires</b> — fewer than you did = misses, more = something you didn't intend (a return, a stray) is also matching. <b>Quiet check:</b> hit it, then use your hand normally <b>without</b> the gesture — reach, talk with your hands, drop back to rest — anything that fires is a false positive. The attempt count comes from you; it's never guessed from the video.</p>
+          <div id="testResults"></div>
+        </section>
+
+      </main>
+    </div>
+    <script type="module" src="/src/studio.js"></script>
+  </body>
+</html>

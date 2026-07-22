@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Gesture HCI</title>
+    <style>
+      html, body {
+        margin: 0;
+        background: #0b0e14;
+        color: #cbd5e1;
+        font: 12px/1.4 -apple-system, system-ui, sans-serif;
+        overflow: hidden;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      #app {
+        position: relative;
+        width: 480px;
+        height: 360px;
+      }
+      #banner {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 6px 8px;
+        background: rgba(180, 60, 60, 0.85);
+        color: #fff;
+        font-size: 11px;
+        display: none;
+      }
+      #banner.show { display: block; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="banner"></div>
+    <script type="module" src="/src/renderer.js"></script>
+  </body>
+</html>

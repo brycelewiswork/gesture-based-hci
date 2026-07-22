@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "camera": { "width": 640, "height": 480, "facingMode": "user" },
+  "detection": {
+    "numHands": 2,
+    "minHandDetectionConfidence": 0.5,
+    "minHandPresenceConfidence": 0.5,
+    "minTrackingConfidence": 0.5
+  },
+  "handSelect": { "takeoverRatio": 1.25, "maxCentroidJump": 0.25 },
+  "tuning": {
+    "dwellMs": 500,
+    "cooldownMs": 1200,
+    "pinchRatio": 0.35,
+    "pinchRelease": 0.5,
+    "voteWindow": 4,
+    "featureSmoothing": 0.5,
+    "knnK": 15,
+    "knnMinConfidence": 0.9,
+    "segStartEnergy": 0.15,
+    "segEndEnergy": 0.09,
+    "segSettleMs": 140,
+    "segReadyMs": 250,
+    "segMinMs": 120,
+    "segMaxMs": 1600,
+    "commitDelayMs": 80,
+    "activeFps": 30,
+    "idleFps": 8,
+    "idleAfterMs": 1200
+  },
+  "gestures": [
+    {
+      "id": "fist-maximize",
+      "name": "Fist",
+      "enabled": true,
+      "fingers": { "thumb": "any", "index": "down", "middle": "down", "ring": "down", "pinky": "down" },
+      "pinch": "any",
+      "spread": "any",
+      "tolerance": 0.4,
+      "dwellMs": null,
+      "action": "maximize"
+    }
+  ],
+  "calibration": {
+    "model": "thumb-base-v1",
+    "captured": false,
+    "curlOpen": { "thumb": 30, "index": 30, "middle": 30, "ring": 30, "pinky": 30 },
+    "curlClosed": { "thumb": 12, "index": 200, "middle": 200, "ring": 200, "pinky": 200 },
+    "splaySpread": 22,
+    "splayTogether": 6
+  },
+  "debug": { "dryRun": false }
+}

@@ -1,0 +1,60 @@
+{
+  "name": "gesture-based-hci",
+  "version": "0.1.0",
+  "description": "Control macOS window management with webcam hand gestures.",
+  "private": true,
+  "type": "commonjs",
+  "main": "electron/main.js",
+  "scripts": {
+    "build:helper": "bash native/build.sh",
+    "dev": "npm run build:helper && concurrently -k -n vite,electron -c cyan,magenta \"vite\" \"wait-on tcp:127.0.0.1:5173 && VITE_DEV=1 electron .\"",
+    "build:renderer": "vite build",
+    "build": "npm run build:helper && npm run build:renderer",
+    "start": "npm run build && electron .",
+    "setup:signing": "bash scripts/setup-signing-cert.sh",
+    "pack": "npm run build && electron-builder --dir",
+    "build:app": "npm run pack && bash scripts/sign-app.sh"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "vite": "^6.0.0",
+    "wait-on": "^8.0.1"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "^0.10.35",
+    "p5": "^1.11.2"
+  },
+  "build": {
+    "appId": "work.brycelewis.gesturehci",
+    "productName": "Gesture HCI",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/**/*",
+      "shared/**/*",
+      "dist/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "native/bin/window-helper",
+        "to": "window-helper"
+      }
+    ],
+    "mac": {
+      "target": [
+        "dir"
+      ],
+      "category": "public.app-category.utilities",
+      "hardenedRuntime": false,
+      "identity": null,
+      "extendInfo": {
+        "NSCameraUsageDescription": "Gesture HCI uses the camera to detect hand gestures for window control.",
+        "LSUIElement": true
+      }
+    }
+  }
+}
