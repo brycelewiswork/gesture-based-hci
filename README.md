@@ -94,6 +94,34 @@ briefly).
    *any* hand. Rest gives the match something to lose to.
 3. Set the real pose's **Action** and, if you like, a per-gesture **Dwell**.
 
+### Make gestures that fire reliably
+A few things separate a gesture that "just works" from a frustrating one:
+
+- **Make it distinct** from your idle hands and from your other gestures. The
+  recognizer needs something to tell them apart — a clear direction, a specific
+  finger shape, a decisive motion. Opposite pairs (flick left / flick right) are
+  fine; vague wiggles are not.
+- **Be crisp and consistent.** Perform every enrollment rep the same, decisive way.
+  Fast, committed motions enroll far better than slow, drifty ones — the recognizer
+  keys on **speed**, and sloppy reps make a fuzzy template.
+- **Don't fuss over size or timing.** A small casual version and a big deliberate
+  one both match, and you can pause before/after — each rep is trimmed to its active
+  burst. Perform it how you *actually* will in daily use.
+- **Read the enrollment card.** "Reps agree within" should sit comfortably *below*
+  "distance to a still hand" — that gap is your reliability margin. If they're close,
+  re-enroll more consistently (or make the gesture more distinct).
+
+### Train both hands
+The recognizer is **hand-specific**. The same "flick left" done with your left vs
+right hand is genuinely a different movement — different biomechanics, mirrored
+geometry — so a gesture enrolled with one hand **won't reliably fire with the
+other**. If you want a gesture to work either-handed, **enroll it twice** (once per
+hand) and point both at the same Action.
+
+Your non-dominant hand is usually less consistent, so be extra crisp and deliberate
+when enrolling it — a fast, repeatable rep matters more there. Re-record if the
+enrollment card shows loose rep agreement.
+
 ### Validate before you trust it
 The **Recognition test** panel:
 - **Detection run** — say how many times you'll do it, perform them, Stop. It
@@ -126,6 +154,51 @@ re-centered, and apps that snap their own position (e.g. Figma) are re-asserted.
 - **Dry-run** — log what *would* fire without moving windows
 - **Open Gesture Studio**
 - **Quit**
+
+---
+
+## Troubleshooting
+
+Most problems fall into a handful of buckets. Use the **Recognition test** panel to
+see what's actually happening before changing anything.
+
+**A gesture never fires, or misses a lot.** Run a **Detection run**. If the card
+says it "dipped under threshold" but didn't fire, your reps are too close together
+(the cooldown ate them — space them out) or **Settle hold** is too high. If it never
+got near the threshold, your live motion doesn't match what you enrolled — re-record
+performing it the way you actually do, or nudge **Sensitivity** up (less strict).
+
+**A pose fires on *any* hand, or constantly.** You only recorded one pose. The
+matcher (k-NN) always picks the nearest recorded pose, and with one class that's
+*always* it. **Record a second "rest" pose** — relaxed / open / typing hands — with
+**Action = None**. That gives the vote somewhere to go when you're not signing.
+
+**A windup fires the opposite gesture** (you cock left before flicking right, and
+"left" triggers). Raise **Settle hold**. Firing waits for your hand to actually
+*stop*; a brief windup that reverses into the real motion won't clear that bar.
+
+**Too many false fires during normal use.** Run a **Quiet check** (move around
+*without* gesturing) to see what's matching. Lower **Sensitivity**, raise **Settle
+hold**, and for poses make sure your rest class covers the hands you really make —
+an **open hand** especially, since it's close to many poses.
+
+**Works with one hand but not the other.** Enroll the other hand as its own gesture
+(see [Train both hands](#train-both-hands)).
+
+**Recognized, but the window doesn't move.** In order: (1) grant **Accessibility**
+to the helper (System Settings → Privacy & Security → Accessibility); (2) turn off
+**Dry-run** in the menu bar; (3) some apps manage their own window — a native
+**full-screen** window can't be moved at all, and a few apps cap their size or
+re-assert their position (the helper compensates by re-centering / re-asserting, but
+a hard full-screen is off-limits).
+
+**It feels laggy.** In Tuning: lower **Settle hold**, raise **Active FPS**, lower
+**Steadiness**. Each is a trade-off (snappier vs. more windup-prone / more GPU / more
+jitter) — see the Tune section.
+
+**Nothing detects at all.** Check the camera isn't **Paused** (menu bar) and that
+another app hasn't grabbed the webcam. Show the camera preview (menu bar) to confirm
+the hand skeleton is tracking.
 
 ---
 
